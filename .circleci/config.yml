@@ -2,21 +2,55 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
+commands:
+  destroy-cluster:
+    description: Destroy cluster.
+    parameters:
+      workflow_id:
+        type: string
+    steps:
+      - run:
+          name: Destroy cluster
+          when: on_fail
+          command: |
+            echo "Destroying cluster "
+            eksctl delete cluster --region=us-east-2 --name=<< parameters.workflow_id >>
+
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  say-hello:
+  lint:
+    docker:
+      - image: hadolint/hadolint
+    steps:
+      - checkout
+      - run:
+          name: "lint with hadolint"
+          command: hadolint Dockerfile
+          
+  build_image:
+    docker:
+      - image: ubuntu
+    steps:
+      - checkout
+      - run:
+          name: "Build docker image"
+          command: docker build --tag=flask_api . 
+          
+  create-cluster:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
-      - image: cimg/base:stable
+      - image: alpine/k8s
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: "Create cluster"
+          command: "eksctl create cluster --name eksctl-demo --region=us-east-2"
+      - destroy-cluster:
+          workflow_id: eksctl-demo
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows

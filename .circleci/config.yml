@@ -129,11 +129,11 @@ workflows:
           requires:
             - linting
       - create-cluster:
-          cluster-name: my-eks-demo
+          cluster-name: myeks
           requires:
             - build-and-push-docker
       - test-cluster:
-          cluster-name: my-eks-demo
+          cluster-name: myeks
           requires:
             - create-cluster
     

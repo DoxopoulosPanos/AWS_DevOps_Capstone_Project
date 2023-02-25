@@ -3,7 +3,10 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
-
+orbs:
+  aws-eks: circleci/aws-eks@1.1.0
+  kubernetes: circleci/kubernetes@0.4.0
+  
 jobs:
   linting:
     docker:
@@ -79,10 +82,23 @@ jobs:
             docker tag blue_capstone_api:latest panosdoxos/blue_capstone_api:latest
             docker push panosdoxos/blue_capstone_api:latest
             
-          
-orbs:
-  aws-eks: circleci/aws-eks@1.1.0
-  kubernetes: circleci/kubernetes@0.4.0
+  test-cluster:
+    docker:
+      - image: 'cimg/python:3.10'
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install:
+          kubectl-version: v1.22.0
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          command: |
+            kubectl get services
+          name: Test cluster
   
 workflows:
   version: 2
@@ -93,7 +109,11 @@ workflows:
           requires:
             - linting
       - aws-eks/create-cluster:
-          cluster-name: my-first-cluster
+          cluster-name: my-eks-demo
           requires:
             - build-and-push-docker
+      - test-cluster:
+          cluster-name: my-eks-demo
+          requires:
+            - aws-eks/create-cluster
     

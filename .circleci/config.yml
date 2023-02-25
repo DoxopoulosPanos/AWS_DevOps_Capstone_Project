@@ -54,10 +54,7 @@ jobs:
             
   build-and-push-docker:
     docker:
-      - image: cimg/base:2022.06
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD 
+      - image: circleci/python:3.7.3-stretch
 
     working_directory: ~/repo
 

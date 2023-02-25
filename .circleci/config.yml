@@ -54,8 +54,10 @@ jobs:
             
   build-and-push-docker:
     docker:
-      # Use the same Docker base as the project
-      - image: python:3.7.3-stretch
+      - image: cimg/base:2022.06
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD 
 
     working_directory: ~/repo
 
@@ -68,9 +70,10 @@ jobs:
             - v1-dependencies-{{ checksum "blue/requirements.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-    
+
+      # ... steps for building/testing app ...
       - setup_remote_docker:
-          version: 19.03.13
+          version: 20.10.14
           
       - run:
           name: build docker image for blue deployment

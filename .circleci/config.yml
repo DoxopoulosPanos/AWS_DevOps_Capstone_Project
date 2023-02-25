@@ -17,7 +17,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ checksum "blue/requirements.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
@@ -34,12 +34,29 @@ jobs:
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+          key: v1-dependencies-{{ checksum "blue/requirements.txt" }}
 
       # run lint!
       - run:
-          name: run lint for blue
+          name: run lint for blue deployment
           command: |
             . venv/bin/activate
             cd blue
             make lint 
+    
+      - run:
+          name: build docker image for blue deployment
+          command: |
+            . venv/bin/activate
+            cd blue
+            docker build --tag=blue_capstone_api .
+      
+      - run:
+          name: upload docker image for blue deployment to cloudhub
+          command: |
+            . venv/bin/activate
+            cd blue
+            docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
+            docker tag prediction_api:latest panosdoxos/blue_capstone_api:latest
+            docker push panosdoxos/blue_capstone_api:latest
+    

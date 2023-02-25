@@ -50,7 +50,7 @@ jobs:
   build-and-push-docker:
     docker:
       # Use the same Docker base as the project
-      - image: docker:20.10.16
+      - image: python:3.7.3-stretch
 
     working_directory: ~/repo
 
@@ -64,6 +64,9 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
     
+      - setup_remote_docker:
+          docker_layer_caching: true
+          
       - run:
           name: build docker image for blue deployment
           command: |

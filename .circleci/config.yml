@@ -80,7 +80,7 @@ jobs:
             . venv/bin/activate
             cd blue
             docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
-            docker tag prediction_api:latest panosdoxos/blue_capstone_api:latest
+            docker tag blue_capstone_api:latest panosdoxos/blue_capstone_api:latest
             docker push panosdoxos/blue_capstone_api:latest
             
 workflows:

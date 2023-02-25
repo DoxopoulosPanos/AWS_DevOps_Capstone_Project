@@ -149,7 +149,7 @@ workflows:
     #       cluster-name: my-eks
     #       requires:
     #         - create-cluster
-      - deploy
+      - deploy:
           requires:
             - build-and-push-docker
     

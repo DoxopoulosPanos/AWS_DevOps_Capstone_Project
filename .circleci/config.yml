@@ -64,13 +64,6 @@ jobs:
     steps:
       - checkout
      
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "blue/requirements.txt" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
       # ... steps for building/testing app ...
       - setup_remote_docker:
           version: 20.10.14
@@ -78,8 +71,10 @@ jobs:
       - run:
           name: build docker image for blue deployment
           command: |
+            python3 -m venv venv
             . venv/bin/activate
             cd blue
+            make install
             docker build --tag=blue_capstone_api .
       
       - run:

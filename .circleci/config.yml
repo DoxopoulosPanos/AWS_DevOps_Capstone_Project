@@ -113,5 +113,5 @@ workflows:
             - linting
       - create-cluster:
           requires:
-            build-and-push-docker
+            - build-and-push-docker
     

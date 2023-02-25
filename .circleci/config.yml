@@ -148,7 +148,7 @@ workflows:
     #       cluster-name: my-eks
     #       requires:
     #         - create-cluster
-      - deploy:
-          requires:
-            - test-cluster
+      - deploy
+        #   requires:
+        #     - test-cluster
     

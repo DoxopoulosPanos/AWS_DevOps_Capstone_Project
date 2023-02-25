@@ -95,10 +95,6 @@ jobs:
       - run:
           name: install eksctl
           command: |
-            if which eksctl > /dev/null; then 
-                echo "eksctl is already installed"
-                exit 0
-            fi
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
@@ -144,14 +140,14 @@ workflows:
       - build-and-push-docker:
           requires:
             - linting
-      - create-cluster:
-          cluster-name: my-eks
-          requires:
-            - build-and-push-docker
-      - test-cluster:
-          cluster-name: my-eks
-          requires:
-            - create-cluster
+    #   - create-cluster:
+    #       cluster-name: my-eks
+    #       requires:
+    #         - build-and-push-docker
+    #   - test-cluster:
+    #       cluster-name: my-eks
+    #       requires:
+    #         - create-cluster
       - deploy:
           requires:
             - test-cluster

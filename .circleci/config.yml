@@ -58,5 +58,7 @@ workflows:
   say-hello-workflow:
     jobs:
       - lint
-      - build_image
-      - create-cluster
+      - build_image:
+          requires: [lint]
+      - create-cluster:
+          requires: [build_image]

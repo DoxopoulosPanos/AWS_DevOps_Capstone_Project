@@ -21,11 +21,11 @@ commands:
 jobs:
   lint:
     docker:
-      - image: hadolint/hadolint
+      - image: hadolint/hadolint:latest
     steps:
       - checkout
       - run:
-          name: "lint with hadolint"
+          name: lint with hadolint
           command: hadolint Dockerfile
           
   build_image:
@@ -34,7 +34,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Build docker image"
+          name: Build docker image
           command: docker build --tag=flask_api . 
           
   create-cluster:
@@ -47,8 +47,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Create cluster"
-          command: "eksctl create cluster --name eksctl-demo --region=us-east-2"
+          name: Create cluster
+          command: eksctl create cluster --name eksctl-demo --region=us-east-2
       - destroy-cluster:
           workflow_id: eksctl-demo
 

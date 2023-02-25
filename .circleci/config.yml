@@ -81,7 +81,27 @@ jobs:
             docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
             docker tag blue_capstone_api:latest panosdoxos/blue_capstone_api:latest
             docker push panosdoxos/blue_capstone_api:latest
-            
+      
+  create-cluster:
+    docker:
+      - image: 'cimg/python:3.10'
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - run:
+          name: install eksctl
+          command: |
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            sudo mv /tmp/eksctl /usr/local/bin
+            eksctl version
+
+      - aws-eks/create-cluster:
+          cluster-name: << parameters.cluster-name >>
+    
+    
   test-cluster:
     docker:
       - image: 'cimg/python:3.10'
@@ -108,12 +128,12 @@ workflows:
       - build-and-push-docker:
           requires:
             - linting
-      - aws-eks/create-cluster:
+      - create-cluster:
           cluster-name: my-eks-demo
           requires:
             - build-and-push-docker
       - test-cluster:
           cluster-name: my-eks-demo
           requires:
-            - aws-eks/create-cluster
+            - create-cluster
     

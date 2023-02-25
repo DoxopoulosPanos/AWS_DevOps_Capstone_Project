@@ -130,6 +130,7 @@ jobs:
           name: Deploy blue deployment in cluster
           command: |
             cd blue
+            chmod +x run_kubernetes.sh
             ./run_kubernetes.sh
   
 workflows:
@@ -149,6 +150,6 @@ workflows:
     #       requires:
     #         - create-cluster
       - deploy
-        #   requires:
-        #     - test-cluster
+          requires:
+            - build-and-push-docker
     

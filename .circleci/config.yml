@@ -266,7 +266,8 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - linting
+      - linting_blue
+      - linting_green
       - build-and-push-docker-blue:
           requires:
             - linting_blue

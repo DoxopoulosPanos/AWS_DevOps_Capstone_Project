@@ -153,7 +153,7 @@ jobs:
           install-kubectl: true
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
-          resource-file-path: blue/kubernetes_deployments/blue-controller.json
+          resource-file-path: blue/kubernetes_deployments/deployment.json
           resource-name: deployment/blue
   create-service:
     executor: aws-eks/python3

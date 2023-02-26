@@ -9,7 +9,7 @@ orbs:
   aws-cli: circleci/aws-cli@2.0.3 
   
 jobs:
-  linting:
+  linting_blue:
     docker:
       # Use the same Docker base as the project
       - image: python:3.7.3-stretch
@@ -49,10 +49,51 @@ jobs:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "blue/requirements.txt" }}
+          
+  linting_green:
+    docker:
+      # Use the same Docker base as the project
+      - image: python:3.7.3-stretch
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "green/requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: install dependencies for blue deployment
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            cd green
+            make install
+            # Install hadolint
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+            chmod +x /bin/hadolint
+            
+      # run lint!
+      - run:
+          name: run lint for green deployment
+          command: |
+            . venv/bin/activate
+            cd green
+            make lint 
+            
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "green/requirements.txt" }}
 
       
             
-  build-and-push-docker:
+  build-and-push-docker-blue:
     docker:
       - image: circleci/python:3.7.3-stretch
 
@@ -82,6 +123,37 @@ jobs:
             docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
             docker tag blue_capstone_api:latest panosdoxos/blue_capstone_api:latest
             docker push panosdoxos/blue_capstone_api:latest
+            
+  build-and-push-docker-green:
+    docker:
+      - image: circleci/python:3.7.3-stretch
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+     
+      # ... steps for building/testing app ...
+      - setup_remote_docker:
+          version: 20.10.14
+          
+      - run:
+          name: build docker image for blue deployment
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            cd green
+            make install
+            docker build --tag=green_capstone_api .
+      
+      - run:
+          name: upload docker image for blue deployment to cloudhub
+          command: |
+            . venv/bin/activate
+            cd green
+            docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
+            docker tag blue_capstone_api:latest panosdoxos/green_capstone_api:latest
+            docker push panosdoxos/green_capstone_api:latest
       
   create-cluster:
     docker:
@@ -121,7 +193,7 @@ jobs:
             kubectl get services
           name: Test cluster
   
-  deploy:
+  deploy-blue:
     docker:
       - image: 'cimg/python:3.10'
     steps:
@@ -139,7 +211,25 @@ jobs:
           command: |
             sleep 120 && kubectl get all
             
-  create-deployment:
+  deploy-green:
+    docker:
+      - image: 'cimg/python:3.10'
+    steps:
+      - checkout
+      - kubernetes/install:
+          kubectl-version: v1.22.0
+      - run:
+          name: Deploy green deployment in cluster
+          command: |
+            cd green
+            chmod +x run_kubernetes.sh
+            ./run_kubernetes.sh
+      - run:
+          name: Test green deployment 
+          command: |
+            sleep 120 && kubectl get all
+            
+  create-deployment-blue:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -155,7 +245,7 @@ jobs:
           get-rollout-status: true
           resource-file-path: blue/kubernetes_deployments/deployment.json
           resource-name: deployment/blue
-  create-service:
+  create-service-blue:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -177,9 +267,12 @@ workflows:
   build_and_test:
     jobs:
       - linting
-      - build-and-push-docker:
+      - build-and-push-docker-blue:
           requires:
-            - linting
+            - linting_blue
+      build-and-push-docker-green:
+          requires:
+            - linting_green
     #   - create-cluster:
     #       cluster-name: my-eks
     #       requires:
@@ -188,15 +281,19 @@ workflows:
     #       cluster-name: my-eks
     #       requires:
     #         - create-cluster
-      - create-service:
+    #   - deploy-blue:
+    #       requires:
+    #         - build-and-push-docker-blue
+    #   - deploy-green:
+    #       requires:
+    #         - build-and-push-docker-green
+      - create-service-blue:
           cluster-name: my-eks
           requires:
-            - build-and-push-docker
-      - create-deployment:
+            - build-and-push-docker-blue
+      - create-deployment-blue:
           cluster-name: my-eks
           requires:
             - create-service
-    #   - deploy:
-    #       requires:
-    #         - build-and-push-docker
+    
     

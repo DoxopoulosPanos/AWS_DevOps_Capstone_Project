@@ -295,6 +295,6 @@ workflows:
       - create-deployment-blue:
           cluster-name: my-eks
           requires:
-            - create-service-blue:
+            - create-service-blue
     
     

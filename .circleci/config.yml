@@ -271,7 +271,7 @@ workflows:
       - build-and-push-docker-blue:
           requires:
             - linting_blue
-      build-and-push-docker-green:
+      - build-and-push-docker-green:
           requires:
             - linting_green
     #   - create-cluster:

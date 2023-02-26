@@ -138,7 +138,7 @@ jobs:
           version: 20.10.14
           
       - run:
-          name: build docker image for blue deployment
+          name: build docker image for green deployment
           command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -147,12 +147,12 @@ jobs:
             docker build --tag=green_capstone_api .
       
       - run:
-          name: upload docker image for blue deployment to cloudhub
+          name: upload docker image for green deployment to cloudhub
           command: |
             . venv/bin/activate
             cd green
             docker login -u="$DOCKERHUB_USERNAME" -p="$DOCKERHUB_PASSWORD"
-            docker tag blue_capstone_api:latest panosdoxos/green_capstone_api:latest
+            docker tag green_capstone_api:latest panosdoxos/green_capstone_api:latest
             docker push panosdoxos/green_capstone_api:latest
       
   create-cluster:
@@ -282,19 +282,19 @@ workflows:
     #       cluster-name: my-eks
     #       requires:
     #         - create-cluster
-    #   - deploy-blue:
-    #       requires:
-    #         - build-and-push-docker-blue
+      - deploy-blue:
+          requires:
+            - build-and-push-docker-blue
     #   - deploy-green:
     #       requires:
     #         - build-and-push-docker-green
-      - create-service-blue:
-          cluster-name: my-eks
-          requires:
-            - build-and-push-docker-blue
-      - create-deployment-blue:
-          cluster-name: my-eks
-          requires:
-            - create-service-blue
+    #   - create-service-blue:
+    #       cluster-name: my-eks
+    #       requires:
+    #         - build-and-push-docker-blue
+    #   - create-deployment-blue:
+    #       cluster-name: my-eks
+    #       requires:
+    #         - create-service-blue
     
     

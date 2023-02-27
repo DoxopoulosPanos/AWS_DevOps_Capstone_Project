@@ -192,42 +192,6 @@ jobs:
           command: |
             kubectl get services
           name: Test cluster
-  
-  deploy-blue:
-    docker:
-      - image: 'cimg/python:3.10'
-    steps:
-      - checkout
-      - kubernetes/install:
-          kubectl-version: v1.22.0
-      - run:
-          name: Deploy blue deployment in cluster
-          command: |
-            cd blue
-            chmod +x run_kubernetes.sh
-            ./run_kubernetes.sh
-      - run:
-          name: Test blue deployment 
-          command: |
-            sleep 120 && kubectl get all
-            
-  deploy-green:
-    docker:
-      - image: 'cimg/python:3.10'
-    steps:
-      - checkout
-      - kubernetes/install:
-          kubectl-version: v1.22.0
-      - run:
-          name: Deploy green deployment in cluster
-          command: |
-            cd green
-            chmod +x run_kubernetes.sh
-            ./run_kubernetes.sh
-      - run:
-          name: Test green deployment 
-          command: |
-            sleep 120 && kubectl get all
             
   create-deployment:
     executor: aws-eks/python3
@@ -290,12 +254,6 @@ workflows:
     #       cluster-name: my-eks
     #       requires:
     #         - create-cluster
-    #   - deploy-blue:
-    #       requires:
-    #         - build-and-push-docker-blue
-    #   - deploy-green:
-    #       requires:
-    #         - build-and-push-docker-green
       - create-deployment:
           name: create-deployment-blue
           cluster-name: my-eks

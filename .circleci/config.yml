@@ -236,21 +236,9 @@ jobs:
         description: |
           Name of the EKS cluster
         type: string
-    steps:
-      - checkout
-      - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: << parameters.cluster-name >>
-          install-kubectl: true
-      - kubernetes/create-or-update-resource:
-          get-rollout-status: true
-          resource-file-path: blue/kubernetes_deployments/deployment.json
-          resource-name: deployment/blue
-  create-service-blue:
-    executor: aws-eks/python3
-    parameters:
-      cluster-name:
+      strategy-name:
         description: |
-          Name of the EKS cluster
+          Name of the deplopyment strategy (blue or green)
         type: string
     steps:
       - checkout
@@ -258,7 +246,27 @@ jobs:
           cluster-name: << parameters.cluster-name >>
           install-kubectl: true
       - kubernetes/create-or-update-resource:
-          resource-file-path: blue/kubernetes_deployments/service.json
+          get-rollout-status: true
+          resource-file-path: << parameters.strategy-name >>/kubernetes_deployments/deployment.json
+          resource-name: deployment/<< parameters.strategy-name >>
+  create-service-blue:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+      strategy-name:
+        description: |
+          Name of the deplopyment strategy (blue or green)
+        type: string
+    steps:
+      - checkout
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+          install-kubectl: true
+      - kubernetes/create-or-update-resource:
+          resource-file-path: << parameters.strategy-name >>/kubernetes_deployments/service.json
           resource-name: service/bluegreenlb
           
   
@@ -290,20 +298,22 @@ workflows:
     #         - build-and-push-docker-green
       - create-deployment-blue:
           cluster-name: my-eks
+          strategy-name: blue
           requires:
             - build-and-push-docker-blue
       - create-service-blue:
           cluster-name: my-eks
+          strategy-name: blue
           requires:
             - create-deployment-blue
-      - create-deployment-green:
-          cluster-name: my-eks
-          requires:
-            - build-and-push-docker-green
-            - create-service-blue
-      - update-service-green:
-          cluster-name: my-eks
-          requires:
-            - create-deployment-green
+      # - create-deployment-green:
+      #     cluster-name: my-eks
+      #     requires:
+      #       - build-and-push-docker-green
+      #       - create-service-blue
+      # - update-service-green:
+      #     cluster-name: my-eks
+      #     requires:
+      #       - create-deployment-green
     
     

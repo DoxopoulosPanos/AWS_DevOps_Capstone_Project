@@ -1,6 +1,6 @@
 {
-   "kind":"Deployment",
-   "apiVersion":"apps/v1",
+   "kind":"ReplicationController",
+   "apiVersion":"v1",
    "metadata":{
       "name":"blue",
       "labels":{
@@ -10,9 +10,7 @@
    "spec":{
       "replicas":1,
       "selector":{
-         "matchLabels":{
-            "app":"blue"
-         }
+         "app":"blue"
       },
       "template":{
          "metadata":{

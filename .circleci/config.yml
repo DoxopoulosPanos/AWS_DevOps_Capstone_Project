@@ -282,19 +282,19 @@ workflows:
     #       cluster-name: my-eks
     #       requires:
     #         - create-cluster
-      - deploy-blue:
-          requires:
-            - build-and-push-docker-blue
+    #   - deploy-blue:
+    #       requires:
+    #         - build-and-push-docker-blue
     #   - deploy-green:
     #       requires:
     #         - build-and-push-docker-green
-    #   - create-service-blue:
-    #       cluster-name: my-eks
-    #       requires:
-    #         - build-and-push-docker-blue
-    #   - create-deployment-blue:
-    #       cluster-name: my-eks
-    #       requires:
-    #         - create-service-blue
+      - create-deployment-blue:
+          cluster-name: my-eks
+          requires:
+            - build-and-push-docker-blue
+      - create-service-blue:
+          cluster-name: my-eks
+          requires:
+            - create-service-blue
     
     

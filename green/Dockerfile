@@ -1,4 +1,5 @@
-FROM 
+FROM python:3.7.3-stretch
+LABEL maintainer_name="Panos"
 
 ## Step 1:
 # Create a working directory

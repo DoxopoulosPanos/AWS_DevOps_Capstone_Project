@@ -308,18 +308,18 @@ workflows:
           strategy-name: blue
           requires:
             - create-deployment-blue
-      # - create-deployment:
-      #     name: create-deployment-green
-      #     cluster-name: my-eks
-      #     strategy-name: green
-      #     requires:
-      #       - build-and-push-docker-green
-      #       - create-service-blue
-      # - update-service:
-      #     name: create-service-green
-      #     cluster-name: my-eks
-      #     strategy-name: green
-      #     requires:
-      #       - create-deployment-green
+      - create-deployment:
+          name: create-deployment-green
+          cluster-name: my-eks
+          strategy-name: green
+          requires:
+            - build-and-push-docker-green
+            - create-service-blue
+      - update-service:
+          name: create-service-green
+          cluster-name: my-eks
+          strategy-name: green
+          requires:
+            - create-deployment-green
     
     

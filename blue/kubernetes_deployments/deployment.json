@@ -1,6 +1,6 @@
 {
-   "kind":"ReplicationController",
-   "apiVersion":"v1",
+   "kind":"Deployment",
+   "apiVersion":"apps/v1",
    "metadata":{
       "name":"blue",
       "labels":{
@@ -10,7 +10,9 @@
    "spec":{
       "replicas":1,
       "selector":{
-         "app":"blue"
+         "matchLabels":{
+            "app":"blue"
+         }
       },
       "template":{
          "metadata":{
@@ -22,7 +24,7 @@
             "containers":[
                {
                   "name":"blue",
-                  "image":"panosdoxos/blue_capstone_api",
+                  "image":"panosdoxos/blue_capstone_api:latest",
                   "ports":[
                      {
                         "name":"http-server",

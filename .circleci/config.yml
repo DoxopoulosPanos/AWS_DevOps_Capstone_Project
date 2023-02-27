@@ -229,7 +229,7 @@ jobs:
           command: |
             sleep 120 && kubectl get all
             
-  create-deployment-blue:
+  create-deployment:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -249,7 +249,7 @@ jobs:
           get-rollout-status: true
           resource-file-path: << parameters.strategy-name >>/kubernetes_deployments/deployment.json
           resource-name: deployment/<< parameters.strategy-name >>
-  create-service-blue:
+  create-service:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -296,23 +296,29 @@ workflows:
     #   - deploy-green:
     #       requires:
     #         - build-and-push-docker-green
-      - create-deployment-blue:
+      - create-deployment:
+          name: create-deployment-blue
           cluster-name: my-eks
           strategy-name: blue
           requires:
             - build-and-push-docker-blue
-      - create-service-blue:
+      - create-service:
+          name: create-service-blue
           cluster-name: my-eks
           strategy-name: blue
           requires:
             - create-deployment-blue
-      # - create-deployment-green:
+      # - create-deployment:
+      #     name: create-deployment-green
       #     cluster-name: my-eks
+      #     strategy-name: green
       #     requires:
       #       - build-and-push-docker-green
       #       - create-service-blue
-      # - update-service-green:
+      # - update-service:
+      #     name: create-service-green
       #     cluster-name: my-eks
+      #     strategy-name: green
       #     requires:
       #       - create-deployment-green
     

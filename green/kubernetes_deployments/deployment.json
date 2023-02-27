@@ -25,6 +25,7 @@
                {
                   "name":"green",
                   "image":"panosdoxos/green_capstone_api",
+                  "imagePullPolicy": "Always",
                   "ports":[
                      {
                         "name":"http-server",
